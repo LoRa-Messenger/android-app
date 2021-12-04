@@ -1,11 +1,10 @@
 package com.example.loramessenger;
 
-import static java.util.UUID.fromString;
-
 import java.util.UUID;
 
-public class LoRaUuids {
+import static java.util.UUID.fromString;
 
+public class LoRaUuids {
     public static final UUID
 
             // Service and Characteristic UUIDs

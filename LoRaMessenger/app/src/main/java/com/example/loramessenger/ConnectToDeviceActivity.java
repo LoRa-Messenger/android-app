@@ -30,17 +30,54 @@ public class ConnectToDeviceActivity extends AppCompatActivity implements BLECon
     private String deviceName;
     public static String name;
     private ProgressDialog progressDialog;
+    private boolean isAlive = false;
+    private Thread heartBeatThread = null;
+    private RemoteControl remoteControl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_to_device);
 
+        this.bleController = BLEController.getInstance(this);
+        this.remoteControl = new RemoteControl(this.bleController);
+
         inputDeviceName = findViewById(R.id.EnterDeviceName);
         initConnectButton();
 
         checkBLESupport();
         checkPermissions();
+    }
+
+    public void startHeartBeat() {
+        this.isAlive = true;
+        this.heartBeatThread = createHeartBeatThread();
+        this.heartBeatThread.start();
+    }
+
+    public void stopHeartBeat() {
+        if(this.isAlive) {
+            this.isAlive = false;
+            this.heartBeatThread.interrupt();
+        }
+    }
+
+    private Thread createHeartBeatThread() {
+        return new Thread() {
+            @Override
+            public void run() {
+                while(ConnectToDeviceActivity.this.isAlive) {
+                    heartBeat();
+                    try {
+                        Thread.sleep(1000l);
+                    }catch(InterruptedException ie) { return; }
+                }
+            }
+        };
+    }
+
+    private void heartBeat() {
+        this.remoteControl.heartbeat();
     }
 
     private void checkPermissions() {
@@ -112,7 +149,6 @@ public class ConnectToDeviceActivity extends AppCompatActivity implements BLECon
         }
     }
 
-
     @Override
     public void BLEControllerConnected() {
         Log.i("[BLE]","Connected");
@@ -122,6 +158,8 @@ public class ConnectToDeviceActivity extends AppCompatActivity implements BLECon
 
             }
         });
+        startHeartBeat();
+        startActivity(new Intent(ConnectToDeviceActivity.this, MainActivity.class));
     }
 
     @Override

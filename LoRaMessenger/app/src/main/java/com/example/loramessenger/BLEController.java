@@ -30,7 +30,7 @@ public class BLEController {
 
     BluetoothGattCharacteristic mRandomNumber;
     BluetoothGattCharacteristic mLEDScreen;
-    private boolean read = true;
+    public boolean read = true;
 
     private BluetoothGattCharacteristic btGattChar = null;
     private BluetoothGattDescriptor btGattDesc = null;
@@ -140,23 +140,7 @@ public class BLEController {
             for (BluetoothGattService service : gatt.getServices()) {
                 Log.i("BLE", String.valueOf(service));
 
-//                if (service.getUuid().equals(LoRaUuids.UUID_RANDOM_NUMBER_GENERATOR_SERVICE)) {
-//                    Log.i("BLE", "Inside Random number Service");
-//                    for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-//                        Log.i("BLE", "Inside Random number Characteristic");
-//                        if (characteristic.getUuid().equals(LoRaUuids.UUID_RANDOM_NUMBER_CHARACTERISTIC)) {
-//                            Log.i("BLE", "Char = " + LoRaUuids.UUID_RANDOM_NUMBER_CHARACTERISTIC);
-//                            Log.i("GATT", "gatt = " +gatt);
-//                            Log.i("CHAR","characteristic= "+characteristic);
-//                            read = true;
-//                            btGattChar = characteristic;
-//                            bluetoothGatt.readCharacteristic(mRandomNumber);
-//                            chars.add(btGattChar);
-//                            fireConnected();
-//                            Log.i("BLE", "Random number Tracking Added");
-//                        }
-//                    }
-//                }
+
                 if (service.getUuid().equals(LoRaUuids.UUID_LED_DISPLAY_SERVICE)) {
                     Log.i("BLE", "Inside LED display Service");
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
@@ -233,7 +217,7 @@ public class BLEController {
     }
 
 
-    public void readData(byte[] data) {
+    public void read_write_Data(byte[] data) {
         if (read ==  true) {
             requestCharacteristics(bluetoothGatt);
             setNotifySensor(bluetoothGatt);
@@ -244,7 +228,7 @@ public class BLEController {
                 a[1] = (byte) 0x69;
                 test.setValue(a);
                 boolean temp = bluetoothGatt.writeCharacteristic(test);
-                Log.d("TEST", "read characteristic: " + temp);
+                Log.d("TEST", "write characteristic: " + temp);
             }
         }
     }
@@ -267,5 +251,3 @@ public class BLEController {
         this.bluetoothGatt.disconnect();
     }
 }
-
-

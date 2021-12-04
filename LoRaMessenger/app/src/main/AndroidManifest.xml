@@ -10,14 +10,15 @@
     <uses-permission
         android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
-    <uses-permission
-        android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"
-        tools:ignore="CoarseFineLocation"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_CONNECT"
+        tools:ignore="CoarseFineLocation" />
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"
         tools:ignore="CoarseFineLocation" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -27,9 +28,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LoRaMessenger">
         <activity
+            android:name=".AddDeviceActivity"
+            android:exported="true" />
+        <activity
             android:name=".ConnectToDeviceActivity"
             android:exported="true"
-            android:theme="@style/Theme.LoRaMessenger2"/>
+            android:theme="@style/Theme.LoRaMessenger2" />
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -42,7 +46,16 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
+        <activity
+            android:name=".SecondActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ThirdActivity"
+            android:exported="true" />
+        <activity
+            android:name=".FourthActivity"
+            android:exported="true" />
     </application>
 
 </manifest>
