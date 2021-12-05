@@ -1,5 +1,8 @@
 package com.example.loramessenger;
 
+import static com.example.loramessenger.LoRaUuids.SERVICE_RECEIVE_UUID;
+import static com.example.loramessenger.LoRaUuids.SERVICE_SEND_UUID;
+
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -30,6 +33,26 @@ public class BLEController {
 
     BluetoothGattCharacteristic mRandomNumber;
     BluetoothGattCharacteristic mLEDScreen;
+    BluetoothGatt mGatt;
+    BluetoothGattService mSender;           // Service for Sender
+    BluetoothGattService mReceiver;         // Service for Receiver
+    BluetoothGattCharacteristic sen_sen_ID;
+    BluetoothGattCharacteristic sen_rec_ID;
+    BluetoothGattCharacteristic sen_mes_ID;
+    BluetoothGattCharacteristic sen_time;
+    BluetoothGattCharacteristic sen_lat;
+    BluetoothGattCharacteristic sen_long;
+    BluetoothGattCharacteristic sen_text;
+    BluetoothGattCharacteristic sen_processed;
+
+    BluetoothGattCharacteristic rec_sen_ID;
+    BluetoothGattCharacteristic rec_rec_ID;
+    BluetoothGattCharacteristic rec_mes_ID;
+    BluetoothGattCharacteristic rec_time;
+    BluetoothGattCharacteristic rec_lat;
+    BluetoothGattCharacteristic rec_long;
+    BluetoothGattCharacteristic rec_text;
+    BluetoothGattCharacteristic rec_processed;
     public boolean read = true;
 
     private BluetoothGattCharacteristic btGattChar = null;
@@ -114,6 +137,7 @@ public class BLEController {
 
     private BluetoothGattCallback bleConnectCallback = new BluetoothGattCallback() {
         String str;
+
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
@@ -131,73 +155,269 @@ public class BLEController {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-            BluetoothGattService RandomNumService = bluetoothGatt.getService(LoRaUuids.UUID_RANDOM_NUMBER_GENERATOR_SERVICE);
-            BluetoothGattService screenService = bluetoothGatt.getService(LoRaUuids.UUID_LED_DISPLAY_SERVICE);
-            //mRandomNumber = RandomNumService.getCharacteristic(LoRaUuids.UUID_RANDOM_NUMBER_CHARACTERISTIC);
-            //mLEDScreen = screenService.getCharacteristic(LoRaUuids.UUID_LED_DISPLAY_CHARACTERISTIC);
+            Log.d("BLE", "onServiceDiscovered callback executed");
+            mSender = bluetoothGatt.getService(SERVICE_SEND_UUID);
+            mReceiver = bluetoothGatt.getService(SERVICE_RECEIVE_UUID);
+            sen_sen_ID = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_SEN_ID);
+            sen_rec_ID = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_REC_ID);
+            sen_mes_ID = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_MES_ID);
+            sen_time = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_TIME);
+            sen_lat = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_LAT);
+            sen_long = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_LONG);
+            sen_text = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_TEXT);
+            sen_processed = mSender.getCharacteristic(LoRaUuids.SEN_CHARACTERISTIC_UUID_PROCESSED);
 
+            rec_sen_ID = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_SEN_ID);
+            rec_rec_ID = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_REC_ID);
+            rec_mes_ID = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_MES_ID);
+            rec_time = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_TIME);
+            rec_lat = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_LAT);
+            rec_long = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_LONG);
+            rec_text = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_TEXT);
+            rec_processed = mReceiver.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_PROCESSED);
 
             for (BluetoothGattService service : gatt.getServices()) {
-                Log.i("BLE", String.valueOf(service));
-
-
-                if (service.getUuid().equals(LoRaUuids.UUID_LED_DISPLAY_SERVICE)) {
-                    Log.i("BLE", "Inside LED display Service");
+                Log.d("BLE", String.valueOf(service));
+                if (service.getUuid().equals(SERVICE_SEND_UUID)) {
+                    read = false;
                     for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                        Log.i("BLE", "Inside LED display Characteristic");
-                        if (characteristic.getUuid().equals(LoRaUuids.UUID_LED_DISPLAY_CHARACTERISTIC)) {
-                            Log.i("BLE", "Char = " + LoRaUuids.UUID_LED_DISPLAY_CHARACTERISTIC);
-                            Log.i("GATT", "gatt = " +gatt);
-                            Log.i("CHAR","characteristic= "+characteristic);
-                            read = false;
-//                            bluetoothGatt.readCharacteristic(mLEDScreen);
-                            btGattChar = characteristic;
-                            chars.add(btGattChar);
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_SEN_ID)) {
+                            //bluetoothGatt.readCharacteristic(sen_sen_ID);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
                             fireConnected();
-                            Log.i("BLE", "LED display Tracking Added");
+                            Log.d("Sender Service", "Sender ID added" );
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_REC_ID)) {
+                            //bluetoothGatt.readCharacteristic(sen_rec_ID);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Receiver ID added");
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_MES_ID)) {
+                            //bluetoothGatt.readCharacteristic(sen_mes_ID);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Message ID added");
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_TIME)) {
+                            //bluetoothGatt.readCharacteristic(sen_time);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Time stamp added");
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_LAT)) {
+                            //bluetoothGatt.readCharacteristic(sen_lat);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Latitude added");
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_LONG)) {
+                            //bluetoothGatt.readCharacteristic(sen_long);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Longitude added");
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_TEXT)) {
+                            //bluetoothGatt.readCharacteristic(sen_text);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Text added");
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.SEN_CHARACTERISTIC_UUID_PROCESSED)) {
+                            //bluetoothGatt.readCharacteristic(sen_processed);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Sender Service", "Processed Characteristic added");
+                        }
+                    }
+                }
+                if (service.getUuid().equals(SERVICE_RECEIVE_UUID)) {
+                    read = true;
+                    for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_SEN_ID)) {
+                            bluetoothGatt.readCharacteristic(rec_sen_ID);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Sender ID added. Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_REC_ID)) {
+                            bluetoothGatt.readCharacteristic(rec_rec_ID);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Receiver ID added. Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_MES_ID)) {
+                            bluetoothGatt.readCharacteristic(rec_mes_ID);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Message ID added. Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_TIME)) {
+                            bluetoothGatt.readCharacteristic(rec_time);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Time stamp added. Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_LAT)) {
+                            bluetoothGatt.readCharacteristic(rec_lat);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Latitude added Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_LONG)) {
+                            bluetoothGatt.readCharacteristic(rec_long);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Longitude added Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_TEXT)) {
+                            bluetoothGatt.readCharacteristic(rec_text);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Text added. Value = " +characteristic.getValue());
+                        }
+                        if (characteristic.getUuid().equals(LoRaUuids.REC_CHARACTERISTIC_UUID_PROCESSED)) {
+                            bluetoothGatt.readCharacteristic(rec_processed);
+                            chars.add(characteristic);
+                            //requestCharacteristics(gatt);
+                            fireConnected();
+                            Log.d("Receiver Service", "Processed Characteristic added. Value = " +characteristic.getValue());
                         }
                     }
                 }
             }
         }
 
-        // Acceleration only
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
-            UUID uuid = characteristic.getUuid();
-            byte[] ba = characteristic.getValue();
-            Log.i("BLE","Inside onCharacteristicChanged");
-            Log.i("BLE","Value of ba= "+ba);
+//        @Override
+//        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+//            super.onServicesDiscovered(gatt, status);
+//            BluetoothGattService RandomNumService = bluetoothGatt.getService(LoRaUuids.UUID_RANDOM_NUMBER_GENERATOR_SERVICE);
+//            BluetoothGattService screenService = bluetoothGatt.getService(LoRaUuids.UUID_LED_DISPLAY_SERVICE);
+//            //mRandomNumber = RandomNumService.getCharacteristic(LoRaUuids.UUID_RANDOM_NUMBER_CHARACTERISTIC);
+//            //mLEDScreen = screenService.getCharacteristic(LoRaUuids.UUID_LED_DISPLAY_CHARACTERISTIC);
+//
+//
+//            for (BluetoothGattService service : gatt.getServices()) {
+//                Log.i("BLE", String.valueOf(service));
+//
+//
+//                if (service.getUuid().equals(LoRaUuids.UUID_LED_DISPLAY_SERVICE)) {
+//                    Log.i("BLE", "Inside LED display Service");
+//                    for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+//                        Log.i("BLE", "Inside LED display Characteristic");
+//                        if (characteristic.getUuid().equals(LoRaUuids.UUID_LED_DISPLAY_CHARACTERISTIC)) {
+//                            Log.i("BLE", "Char = " + LoRaUuids.UUID_LED_DISPLAY_CHARACTERISTIC);
+//                            Log.i("GATT", "gatt = " +gatt);
+//                            Log.i("CHAR","characteristic= "+characteristic);
+//                            read = false;
+////                            bluetoothGatt.readCharacteristic(mLEDScreen);
+//                            btGattChar = characteristic;
+//                            chars.add(btGattChar);
+//                            fireConnected();
+//                            Log.i("BLE", "LED display Tracking Added");
+//                        }
+//                    }
+//                }
+//            }
+//        }
 
-            if (ba == null || ba.length == 0) {
-                Log.i("BLE", "characteristic is not initialized");
-            } else {
-                if (LoRaUuids.UUID_RANDOM_NUMBER_CHARACTERISTIC.equals(uuid)) {
-                    ba = characteristic.getValue();
-                    Log.i("BLE","Value of ba= "+ba);
+//        // Acceleration only
+//        @Override
+//        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+//            super.onCharacteristicChanged(gatt, characteristic);
+//            UUID uuid = characteristic.getUuid();
+//            byte[] ba = characteristic.getValue();
+//            Log.i("BLE", "Inside onCharacteristicChanged");
+//            Log.i("BLE", "Value of ba= " + ba);
+//
+//            if (ba == null || ba.length == 0) {
+//                Log.i("BLE", "characteristic is not initialized");
+//            } else {
+//                if (LoRaUuids.SEN_CHARACTERISTIC_UUID_SEN_ID.equals(uuid)) {
+//                    ba = characteristic.getValue();
+//                    Log.i("BLE", "Value of ba= " + ba);
+//                }
+//            }
+//        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.d("BLE", "onCharacteristicRead executed");
+            UUID uuid = characteristic.getUuid();
+
+
+            if (status== bluetoothGatt.GATT_SUCCESS) {
+
+                if (LoRaUuids.REC_CHARACTERISTIC_UUID_SEN_ID.equals(uuid)) {
+                    //int senSenderID = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, 0);
+                    str = toHexString(characteristic.getValue(), characteristic.getValue().length);
+                    Log.d("CharRead", "Sen Sender ID = " + str);
+                    chars.add(characteristic);
+
                 }
+                if (LoRaUuids.REC_CHARACTERISTIC_UUID_REC_ID.equals(uuid)) {
+                    //int senRecID = (characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT32, 0));
+                    str = toHexString(characteristic.getValue(), characteristic.getValue().length);
+                    Log.d("CharRead", "Sen Receiver ID = " + str);
+                    chars.add(characteristic);
+
+                }
+                if (LoRaUuids.REC_CHARACTERISTIC_UUID_MES_ID.equals(uuid)){
+                    str = toHexString(characteristic.getValue(), characteristic.getValue().length);
+                    Log.d("CharRead", "Sen Message ID " + str);
+                    chars.add(characteristic);
+                }
+                if (LoRaUuids.REC_CHARACTERISTIC_UUID_TEXT.equals(uuid)){
+                    str = toHexString(characteristic.getValue(), characteristic.getValue().length);
+                    Log.d("CharRead", " Sen Text : " + str);
+                    chars.add(characteristic);
+                }
+
+//                chars.remove(chars.get(chars.size() - 1));
+//
+//                if (chars.size() > 0) {
+//                    requestCharacteristics(gatt);   // For Reading multiple times, not only once (Dec 1)
+//                } else {
+//                    gatt.disconnect();
+//                }
             }
         }
     };
 
     private void setNotifySensor(BluetoothGatt gatt) {
-        BluetoothGattCharacteristic characteristic = gatt.getService(LoRaUuids.UUID_RANDOM_NUMBER_GENERATOR_SERVICE).getCharacteristic(LoRaUuids.UUID_RANDOM_NUMBER_CHARACTERISTIC);
+        BluetoothGattCharacteristic characteristic = gatt.getService(LoRaUuids.SERVICE_RECEIVE_UUID).getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_SEN_ID);
         gatt.setCharacteristicNotification(characteristic, true);
 
-        BluetoothGattDescriptor desc = characteristic.getDescriptor(LoRaUuids.UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
-        Log.d("BLE", "Descriptor is " + desc); // this is not null
-        desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        boolean write_desc = gatt.writeDescriptor(desc);
-        Log.d("BLE", "Descriptor write: " +write_desc); // returns true
+//        BluetoothGattDescriptor desc = characteristic.getDescriptor(LoRaUuids.UUID_DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+//        Log.d("BLE", "Descriptor is " + desc); // this is not null
+//        desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//        boolean write_desc = gatt.writeDescriptor(desc);
+//        Log.d("BLE", "Descriptor write: " +write_desc); // returns true
 
     }
     public void requestCharacteristics(BluetoothGatt gatt) {
         for(BluetoothGattCharacteristic test: chars){
-            boolean temp = gatt.readCharacteristic(test);
-            Log.d("TEST", "read characteristic: " + temp);
+            gatt.readCharacteristic(test);
+            //boolean temp = gatt.readCharacteristic(test);
+            //Log.d("TEST", "read characteristic: " + temp);
         }
     }
+
 
     private void fireDisconnected() {
         for (BLEControllerListener l : this.listeners)
@@ -220,7 +440,8 @@ public class BLEController {
     public void read_write_Data(byte[] data) {
         if (read ==  true) {
             requestCharacteristics(bluetoothGatt);
-            setNotifySensor(bluetoothGatt);
+            //setNotifySensor(bluetoothGatt);
+            //Log.d("Read","Read is true");
         }else{
             for(BluetoothGattCharacteristic test: chars){
                 byte[] a = new byte[2];
