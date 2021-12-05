@@ -28,7 +28,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LoRaMessenger">
         <activity
-            android:name=".AddDeviceActivity"
+            android:name=".Contact"
             android:exported="true" />
         <activity
             android:name=".ConnectToDeviceActivity"
