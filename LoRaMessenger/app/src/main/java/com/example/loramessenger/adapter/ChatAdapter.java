@@ -75,31 +75,45 @@ public class ChatAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         this.clickListener = itemClickListener;
     }
 
-    public class ViewHolder1 extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder1 extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         public TextView message;
 
         public ViewHolder1(View itemView){
             super(itemView);
             this.message = itemView.findViewById(R.id.message_body);
             itemView.setOnClickListener(this); // bind the listener
+            itemView.setOnLongClickListener(this);
         }
         @Override
         public void onClick(View view) {
             if (clickListener != null) clickListener.onClick(view, getAdapterPosition());
         }
+
+        @Override
+        public boolean onLongClick(View view) {
+            if (clickListener != null) clickListener.onLongClick(view, getAdapterPosition());
+            return false;
+        }
     }
 
-    public class ViewHolder2 extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder2 extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
         public TextView message;
 
         public ViewHolder2(View itemView){
             super(itemView);
             this.message = itemView.findViewById(R.id.message_body);
             itemView.setOnClickListener(this); // bind the listener
+            itemView.setOnLongClickListener(this);
+
         }
         @Override
         public void onClick(View view) {
             if (clickListener != null) clickListener.onClick(view, getAdapterPosition());
+        }
+        @Override
+        public boolean onLongClick(View view) {
+            if (clickListener != null) clickListener.onLongClick(view, getAdapterPosition());
+            return false;
         }
     }
 }

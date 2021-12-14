@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
         File dir = getFilesDir();
 
-        setContentView(R.layout.main);
+        setContentView(R.layout.main_activity);
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         adapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listitems);
         listView.setAdapter(adapter);
 
-
+        //TODO Need to
         String[] fileList = context.fileList();
         for(int i = 0; i < fileList.length; i++){
             //openfile and add to the list of contacts

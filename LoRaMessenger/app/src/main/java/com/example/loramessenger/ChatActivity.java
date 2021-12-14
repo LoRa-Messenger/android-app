@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
@@ -329,6 +330,23 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         final String toToast = String.format("time: %s \nmessageID: %s",time,messageID);
         Toast.makeText(getApplicationContext(),toToast,Toast.LENGTH_SHORT).show();
     }
+
+    //When you long click on a message, go to map activity
+    @Override
+    public void onLongClick(View view, int position) {
+
+        final ChatModel chatInstance = chatModels.get(position);
+        final String time = chatInstance.getTime();
+        final String messageID = chatInstance.getId();
+        final String toToast = String.format("test");
+        final Intent intent = new Intent(ChatActivity.this, MapActivity.class);
+        //TODO adjust here the code to actually put lat and longitude
+        intent.putExtra("latitude", chatInstance.getPartnerID());
+        intent.putExtra("longitude", chatInstance.getPartnerID());
+        startActivity(intent);
+
+    }
+
 
     private void initCharacteristics(List<BluetoothGattService> gattServices) {
         String uuid;
