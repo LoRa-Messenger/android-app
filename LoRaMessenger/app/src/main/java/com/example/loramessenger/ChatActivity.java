@@ -16,9 +16,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.loramessenger.adapter.ChatAdapter;
@@ -42,6 +45,7 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     private RecyclerView recyclerView;
     private EditText messagebox;
+    private TextView mConnectionState2;
 
     final ArrayList<ChatModel> chatModels = new ArrayList<>();
     int internalID = 1;
@@ -108,7 +112,6 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 invalidateOptionsMenu();
-
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Extract the characteristics
                 initCharacteristics(mBluetoothLeService.getSupportedGattServices());
@@ -190,6 +193,8 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         context = getApplicationContext();
         recipientID = intent.getStringExtra("RecipientID");
         contactName = intent.getStringExtra("ContactName");
+        mConnectionState2 = (TextView) findViewById(R.id.connection_state2);
+        mConnectionState2.setText(MainActivity.mConnectionState.getText());
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
@@ -201,6 +206,7 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
 
         btnSend = findViewById(R.id.btn_chat_send);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(ChatActivity.this));
@@ -442,5 +448,28 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_READ_AVAILABLE);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_RECEIVED);
         return intentFilter;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void updateConnectionState(final int resourceId) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mConnectionState2.setText(resourceId);
+            }
+        });
     }
 }

@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    private TextView mConnectionState;
+    public static TextView mConnectionState;
     private TextView mDataField;
     private String mDeviceName;
     private String mDeviceAddress;
@@ -302,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.menu_disconnect:
                 mBluetoothLeService.disconnect();
+                startActivity(new Intent(MainActivity.this, DeviceScanActivity.class));
                 return true;
             case android.R.id.home:
                 onBackPressed();
