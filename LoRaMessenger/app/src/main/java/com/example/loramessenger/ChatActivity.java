@@ -221,8 +221,8 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         //Check file for previous history and update view
         try {
             // open the file for reading
-
-            fis = context.openFileInput(contactName);
+            String a = getString(R.string.FILE_NAME_CONTACT_PREFIX)+contactName;
+            fis = context.openFileInput(a);
 
             // if file the available for reading
             if (fis != null) {
@@ -273,16 +273,16 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
                 chatAdapter.notifyItemInserted(internalID);
                 recyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
                 buffreader.close();
+                // close the file.
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } catch (Exception e) {
+            Log.e(TAG, String.format("Contact file not found, this should not happen"));
             // print stack trace.
-        } finally {
-            // close the file.
-            try {
-                fis.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         btnSend.setOnClickListener(new View.OnClickListener() {
@@ -408,9 +408,11 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         unbindService(mServiceConnection);
 
         //Write chatModels to file
+        //TODO reorganize to close file output here only and do the actual file write as soon as a
+        // message is received or sent
         try {
-            fos = context.openFileOutput(contactName, Context.MODE_PRIVATE); // open the file for writing
-            if (fos != null) { // if file the available for writing
+            fos = context.openFileOutput(getString(R.string.FILE_NAME_CONTACT_PREFIX)+contactName, Context.MODE_PRIVATE); // open the file for writing
+            if (fos != null) { // if file is available for writing
                 // prepare the file for reading
                 OutputStreamWriter chapterWriter = new OutputStreamWriter(fos);
                 BufferedWriter buffwriter = new BufferedWriter(chapterWriter);

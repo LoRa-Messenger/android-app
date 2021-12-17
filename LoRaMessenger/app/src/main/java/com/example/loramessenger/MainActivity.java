@@ -195,27 +195,39 @@ public class MainActivity extends AppCompatActivity {
         adapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listitems);
         listView.setAdapter(adapter);
 
-        //TODO Need to update to ignore other files
         String[] fileList = context.fileList();
+        String prefix = getString(R.string.FILE_NAME_CONTACT_PREFIX);
+        int prefixLen = prefix.length();
+        String name;
+
         for(int i = 0; i < fileList.length; i++){
-            //openfile and add to the list of contacts
-            FileInputStream fis = null;
-            try {
-                fis = context.openFileInput(fileList[i]);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            InputStreamReader inputStreamReader = new InputStreamReader(fis, StandardCharsets.UTF_8);
+            if(fileList[i].length() >= prefixLen){
+                if(fileList[i].substring(0,prefixLen).equals(prefix)){
+                    //openfile and add to the list of contacts
+                    FileInputStream fis = null;
+                    try {
+                        fis = context.openFileInput(fileList[i]);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    InputStreamReader inputStreamReader = new InputStreamReader(fis, StandardCharsets.UTF_8);
 //            StringBuilder stringBuilder = new StringBuilder();
-            String ID_Read = "0";
-            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
-                ID_Read = reader.readLine();
+                    String ID_Read = "0";
+                    try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                        ID_Read = reader.readLine();
 //
-            } catch (IOException e) {
-                // Error occurred when opening raw file for reading.
+                    } catch (IOException e) {
+                        // Error occurred when opening raw file for reading.
+                    }
+                    name = fileList[i].substring(prefixLen);
+                    listitems.add(name + " | " + ID_Read); // check if \0 is caught and causes issue
+                    contactList.add(new ChatContact(name,ID_Read));
+                } else {
+                    Log.i(TAG, "File found but not a contact");
+                }
             }
-            listitems.add(fileList[i] + " | " + ID_Read); // check if \0 is caught and causes issue
-            contactList.add(new ChatContact(fileList[i],ID_Read));
+
+
         }
 
 
