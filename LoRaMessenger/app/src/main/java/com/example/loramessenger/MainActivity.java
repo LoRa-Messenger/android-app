@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         adapter =  new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listitems);
         listView.setAdapter(adapter);
 
-        //TODO Need to
+        //TODO Need to update to ignore other files
         String[] fileList = context.fileList();
         for(int i = 0; i < fileList.length; i++){
             //openfile and add to the list of contacts
@@ -264,6 +264,8 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     protected void onResume() {
+        //TODO need to check if bluetooth is still active and do actions otherwise
+        //TODO possibly move some code from onCreate to here
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {

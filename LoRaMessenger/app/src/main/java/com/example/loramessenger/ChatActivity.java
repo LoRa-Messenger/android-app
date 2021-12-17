@@ -108,9 +108,11 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
+                updateConnectionState(R.string.connected);
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
+                updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Extract the characteristics
@@ -384,6 +386,8 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
 
     @Override
     protected void onResume() {
+        //TODO need to check if bluetooth is still active and do actions otherwise
+        //TODO possibly move some code from onCreate to here
         super.onResume();
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
         if (mBluetoothLeService != null) {
