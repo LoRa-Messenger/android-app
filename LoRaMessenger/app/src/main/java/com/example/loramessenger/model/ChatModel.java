@@ -6,6 +6,8 @@ public class ChatModel {
     private String time;
     private String isMe;
     private String partnerID;
+    private String latitude;
+    private String longitude;
 
     public String getId() {
         return id;
@@ -45,5 +47,17 @@ public class ChatModel {
 
     public void setMe(String me) {
         isMe = me;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) { this.latitude = latitude; }
+
+    public String getLongitude() { return longitude; }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
     }
 }

@@ -34,6 +34,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.DoubleBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,7 +62,7 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
     private InputStream fis;
     private OutputStream fos;
     private Context context;
-    private final int NUM_MESSAGE_LINE_FILE = 4;
+    private final int NUM_MESSAGE_LINE_FILE = 6;
 
 //    BluetoothGattService mSender;           // Service for Sender
 //    BluetoothGattService mReceiver;         // Service for Receiver
@@ -163,14 +166,20 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
             String formattedDate = df.format(mCalendar.getTime());
             chatModel.setTime(formattedDate);
 
+            //latitude and longitude with appropriate conversion from char array to double to string
+            chatModel.setLatitude(String.valueOf(ByteBuffer.wrap(rec_lat.getValue()).order(ByteOrder.LITTLE_ENDIAN).getDouble()));
+            chatModel.setLongitude(String.valueOf(ByteBuffer.wrap(rec_long.getValue()).order(ByteOrder.LITTLE_ENDIAN).getDouble()));
+
             //message
             byte[] a = rec_text.getValue();
-            String test2 = new String(a);
-            chatModel.setMessage(test2);
+            String test6 = new String(a);
+            chatModel.setMessage(test6);
             chatModels.add(chatModel);
             messagebox.setText("");
             chatAdapter.notifyItemInserted(internalID);
             recyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+
+            updateFile(); // save message to file
         }
         else{
             Log.i(TAG, String.format("INFO: Received message from ID: %s while recipient ID is: %s", chatModel.getPartnerID(), recipientID));
@@ -182,9 +191,12 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
 
     private void receiveBLEMessage() {
         mBluetoothLeService.readCharacteristic(rec_sen_ID);
-        mBluetoothLeService.readCharacteristic(rec_time);
+//        mBluetoothLeService.readCharacteristic(rec_time);
         mBluetoothLeService.readCharacteristic(rec_text);
+        mBluetoothLeService.readCharacteristic(rec_lat);
+        mBluetoothLeService.readCharacteristic(rec_long);
         mBluetoothLeService.readCharacteristic(rec_mes_ID);
+
     }
 
     @Override
@@ -257,8 +269,14 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
                             case 3:
                                 chatModel.setMessage(line);
                                 break;
-                            default: //case 4
+                            case 4:
                                 chatModel.setMe(line);
+                                break;
+                            case 5:
+                                chatModel.setLatitude(line);
+                                break;
+                            default: //case 6 longitude
+                                chatModel.setLongitude(line);
                         }
                         if(counterInternalMessages == NUM_MESSAGE_LINE_FILE ){
                             counterInternalMessages = 0;
@@ -312,6 +330,8 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.CANADA);
                 String formattedDate = df.format(mCalendar.getTime());
                 chatModel.setTime(formattedDate);
+                chatModel.setLatitude(getString(R.string.DEFAULT_LATITUDE));
+                chatModel.setLongitude(getString(R.string.DEFAULT_LONGITUDE));
 
                 mBluetoothLeService.writeCharacteristic(sen_text,message);
                 mBluetoothLeService.writeCharacteristic(sen_rec_ID,String.valueOf(recipientID));
@@ -325,6 +345,7 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
 //                int curSize = chatAdapter.getItemCount();
                 chatAdapter.notifyItemInserted(internalID);
                 recyclerView.scrollToPosition(chatAdapter.getItemCount() - 1);
+                updateFile(); // save message to file
             }
         });
     }
@@ -335,7 +356,10 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         final ChatModel chatInstance = chatModels.get(position);
         final String time = chatInstance.getTime();
         final String messageID = chatInstance.getId();
-        final String toToast = String.format("time: %s \nmessageID: %s",time,messageID);
+        final String latitude = chatInstance.getLatitude();
+        final String longitude = chatInstance.getLongitude();
+        final String toToast = String.format("time: %s \nmessageID: %s\n lat: %s| long: %s",
+                time,messageID,latitude,longitude);
         Toast.makeText(getApplicationContext(),toToast,Toast.LENGTH_SHORT).show();
     }
 
@@ -349,8 +373,9 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
         final String toToast = String.format("test");
         final Intent intent = new Intent(ChatActivity.this, MapActivity.class);
         //TODO adjust here the code to actually put lat and longitude
-        intent.putExtra("latitude", chatInstance.getPartnerID());
-        intent.putExtra("longitude", chatInstance.getPartnerID());
+        intent.putExtra("latitude", chatInstance.getLatitude());
+        intent.putExtra("longitude", chatInstance.getLongitude());
+        intent.putExtra("name", contactName);
         startActivity(intent);
 
     }
@@ -373,9 +398,9 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
                 rec_sen_ID = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_SEN_ID);
 //                rec_rec_ID = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_REC_ID);
                 rec_mes_ID = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_MES_ID);
-                rec_time = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_TIME);
-//                rec_lat = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_LAT);
-//                rec_long = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_LONG);
+//                rec_time = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_TIME);
+                rec_lat = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_LAT);
+                rec_long = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_LONG);
                 rec_text = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_TEXT);
                 rec_processed = gattService.getCharacteristic(LoRaUuids.REC_CHARACTERISTIC_UUID_PROCESSED);
             }
@@ -406,42 +431,6 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
     protected void onDestroy() {
         super.onDestroy();
         unbindService(mServiceConnection);
-
-        //Write chatModels to file
-        //TODO reorganize to close file output here only and do the actual file write as soon as a
-        // message is received or sent
-        try {
-            fos = context.openFileOutput(getString(R.string.FILE_NAME_CONTACT_PREFIX)+contactName, Context.MODE_PRIVATE); // open the file for writing
-            if (fos != null) { // if file is available for writing
-                // prepare the file for reading
-                OutputStreamWriter chapterWriter = new OutputStreamWriter(fos);
-                BufferedWriter buffwriter = new BufferedWriter(chapterWriter);
-
-                ChatModel tempChatModel;
-                buffwriter.write(recipientID,0,1);
-                for(int i = 0; i < chatModels.size(); i++){
-                    tempChatModel = chatModels.get(i);
-                    buffwriter.newLine();
-                    buffwriter.write(tempChatModel.getId());
-                    buffwriter.newLine();
-                    buffwriter.write(tempChatModel.getTime());
-                    buffwriter.newLine();
-                    buffwriter.write(tempChatModel.getMessage());
-                    buffwriter.newLine();
-                    buffwriter.write(tempChatModel.isMe());
-                }
-                buffwriter.close();
-            }
-        } catch (Exception e) {
-            // print stack trace.
-        } finally {
-            // close the file.
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
         mBluetoothLeService = null;
     }
 
@@ -478,4 +467,47 @@ public class ChatActivity extends AppCompatActivity implements ItemClickListener
             }
         });
     }
+
+    private void updateFile(){
+        //Write chatModels to
+        //TODO change to writing only the incoming message except of all the messages every time this method is called
+        try {
+            fos = context.openFileOutput(getString(R.string.FILE_NAME_CONTACT_PREFIX)+contactName, Context.MODE_PRIVATE); // open the file for writing
+            if (fos != null) { // if file is available for writing
+                // prepare the file for reading
+                OutputStreamWriter chapterWriter = new OutputStreamWriter(fos);
+                BufferedWriter buffwriter = new BufferedWriter(chapterWriter);
+
+                ChatModel tempChatModel;
+                buffwriter.write(recipientID,0,1);
+                for(int i = 0; i < chatModels.size(); i++){
+                    tempChatModel = chatModels.get(i);
+                    buffwriter.newLine();
+                    buffwriter.write(tempChatModel.getId());
+                    buffwriter.newLine();
+                    buffwriter.write(tempChatModel.getTime());
+                    buffwriter.newLine();
+                    buffwriter.write(tempChatModel.getMessage());
+                    buffwriter.newLine();
+                    buffwriter.write(tempChatModel.isMe());
+                    buffwriter.newLine();
+                    buffwriter.write(tempChatModel.getLatitude());
+                    buffwriter.newLine();
+                    buffwriter.write(tempChatModel.getLongitude());
+                }
+                buffwriter.close();
+            }
+        } catch (Exception e) {
+            // print stack trace.
+        } finally {
+            // close the file.
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
+

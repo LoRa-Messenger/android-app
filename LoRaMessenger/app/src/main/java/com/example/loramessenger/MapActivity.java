@@ -41,7 +41,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     Marker mCurrLocationMarker;
     FusedLocationProviderClient mFusedLocationClient;
 
-    private String mLat,mLong;
+    private String mLat,mLong, cName;
     private double mLatDouble, mLongDouble;
 
     private static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
@@ -57,9 +57,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         final Intent intent = getIntent();
         mLat = intent.getStringExtra("latitude");
         mLong = intent.getStringExtra("longitude");
-        final String toToast = String.format("latitude: %s \nlongitude: %s",mLat,mLong);
-        Toast.makeText(getApplicationContext(),toToast,Toast.LENGTH_SHORT).show();
+        cName = intent.getStringExtra("name");
 
+//        final String toToast = String.format("latitude: %s \nlongitude: %s",mLat,mLong);
+//        Toast.makeText(getApplicationContext(),toToast,Toast.LENGTH_SHORT).show();
+
+        mLatDouble = Double.parseDouble(mLat);
+        mLongDouble = Double.parseDouble(mLong);
 
 
         // *** IMPORTANT ***
@@ -112,7 +116,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap map) {
         gmap = map;
-        gmap.setMinZoomPreference(12);
+        gmap.setMinZoomPreference(8);
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(120000); // two minute interval
         mLocationRequest.setFastestInterval(120000);
@@ -135,9 +139,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             gmap.setMyLocationEnabled(true);
         }
 
-        LatLng mcGill = new LatLng(45.506152, -73.576416);
-        gmap.moveCamera(CameraUpdateFactory.newLatLng(mcGill));
-        gmap.addMarker(new MarkerOptions().position(new LatLng(45.506152, -73.576416)).title("McGill"));
+        LatLng contactLocation = new LatLng(mLatDouble, mLongDouble);
+        gmap.moveCamera(CameraUpdateFactory.newLatLng(contactLocation));
+        gmap.addMarker(new MarkerOptions().position(contactLocation).title(cName));
     }
 
     @Override

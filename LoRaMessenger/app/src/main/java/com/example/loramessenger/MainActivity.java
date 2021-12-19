@@ -236,10 +236,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final String name = inputName.getText().toString();
                 final String id = inputID.getText().toString();
-                contactList.add(new ChatContact(name,id));
-                listitems.add(name + " | " + id);
-                try (FileOutputStream fos = context.openFileOutput(name, Context.MODE_PRIVATE)) {
+
+                try (FileOutputStream fos = context.openFileOutput(getString(R.string.FILE_NAME_CONTACT_PREFIX)+name, Context.MODE_PRIVATE)) {
                     fos.write(id.getBytes());
+                    contactList.add(new ChatContact(name,id));
+                    listitems.add(name + " | " + id);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

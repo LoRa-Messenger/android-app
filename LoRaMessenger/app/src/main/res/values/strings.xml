@@ -20,6 +20,8 @@
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
     <string name="FILE_NAME_CONTACT_PREFIX">Contact-</string>
+    <string name="DEFAULT_LATITUDE">45.564</string>
+    <string name="DEFAULT_LONGITUDE">-73.56821</string>
 
 
 </resources>
